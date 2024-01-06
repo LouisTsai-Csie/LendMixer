@@ -1,21 +1,33 @@
-name: test
+name: Foundry Testing
+run-name: ${{ github.ref_name }} (test) by ${{ github.actor }}
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - "**"
+      - "!master"
+      - "!staging"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
 
 env:
   FOUNDRY_PROFILE: ci
+  WORKFLOW_NAME: Foundry Test on ${{ github.ref_name }}
 
 jobs:
   check:
     strategy:
       fail-fast: true
 
-    name: Foundry project
+    name: Foundry Testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -24,11 +36,13 @@ jobs:
 
       - name: Run Forge build
         run: |
+          cd lendmixer
           forge --version
           forge build --sizes
         id: build
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          cd lendmixer
+          forge test -vvvvv
         id: test
