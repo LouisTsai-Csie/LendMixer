@@ -245,3 +245,52 @@ contract UnderlyingToken is ERC20 {
         _mint(msg.sender, initialSupply);
     }
 }
+
+contract Receiver is Test {
+    address internal owner;
+    Proxy internal proxy;
+
+    constructor(Proxy _proxy) payable {
+        owner = msg.sender;
+        proxy = _proxy;
+    }
+
+    function onFlashLoan(
+        address initiator,
+        address token,
+        uint256 amount,
+        uint256 fee,
+        bytes calldata data
+    ) external returns (bytes32) {
+        require(msg.sender==address(proxy), "Not LendMixer");
+        require(initiator==owner, "Invalid Initiator");
+        (bool repayEnough, bool returnSuccess) = abi.decode(data, (bool, bool));
+        uint256 totalAmount = repayEnough? amount+fee:amount;
+        ERC20(token).transfer(msg.sender, totalAmount);
+        return returnSuccess? keccak256("ERC3156FlashBorrower.onFlashLoan"):keccak256("failed");
+    }
+}
+
+contract ReentrantReceiver is Test {
+    address internal owner;
+    Proxy internal proxy;
+
+    constructor(Proxy _proxy) payable {
+        owner = msg.sender;
+        proxy = _proxy;
+    }
+
+    function onFlashLoan(
+        address initiator,
+        address token,
+        uint256 amount,
+        uint256 fee,
+        bytes calldata data
+    ) external returns (bytes32) {
+        require(msg.sender==address(proxy), "Not LendMixer");
+        require(initiator==owner, "Invalid Initiator");
+        LendMixer(address(proxy)).deposit(ERC20(token), amount);
+        ERC20(token).transfer(msg.sender, fee);
+        return keccak256("ERC3156FlashBorrower.onFlashLoan");
+    }
+}
