@@ -14,9 +14,9 @@ contract AssetToken is ERC20 {
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLE
     //////////////////////////////////////////////////////////////*/
-    uint256 private exchangeRate;
-    uint256 internal constant exchangeRatePrecision = 1e18;
-    uint256 internal constant exchangeRateInitial = 1e18;
+    uint256 public feeRate;
+    uint256 internal constant feePrecision = 1e18;
+    uint256 internal constant feeInitial = 3e15;
     ERC20 immutable underlyingToken;
     address internal lendMixer;
 
@@ -25,7 +25,7 @@ contract AssetToken is ERC20 {
     //////////////////////////////////////////////////////////////*/
     event AssetToken__mintToken(address to, uint256 amount);
     event AssetToken__burnToken(address account, uint256 amount);
-
+    event AssetToken__updateFeeRate(uint256 originalFee, uint256 updatedFee);
 
     /*//////////////////////////////////////////////////////////////
                                 MODIFIER
@@ -54,7 +54,7 @@ contract AssetToken is ERC20 {
         if(address(_underlyingToken)==address(0)) revert AssetToken_zeroAddressNotAllowed();
         underlyingToken = _underlyingToken;
 
-        exchangeRate = exchangeRateInitial;
+        feeRate = feeInitial;
     }
 
     
@@ -76,8 +76,14 @@ contract AssetToken is ERC20 {
         return underlyingToken;
     }
 
-    function getExchangeRate() external view returns(uint256) {
-        return exchangeRate;
+    function getFeeRate(uint256 amount) external view returns(uint256) {
+        return amount * feeRate / feePrecision;
+    }
+
+    function updateFeeRate(uint256 amount) external onlyLendMixer returns(uint256) {
+        uint256 originalFee = feeRate;
+        feeRate = amount;
+        emit AssetToken__updateFeeRate(originalFee, amount);
     }
 
 }

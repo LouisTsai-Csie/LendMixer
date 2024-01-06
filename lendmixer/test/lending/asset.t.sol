@@ -15,7 +15,9 @@ contract AssetTokenTest is Test {
     AssetToken asset;
 
     event AssetToken__mintToken(address to, uint256 amount);
-    event AssetToken__burnToken(address account, uint256 amount);    
+    event AssetToken__burnToken(address account, uint256 amount);
+    event AssetToken__updateFeeRate(uint256 originalFee, uint256 updatedFee);
+
 
     function setUp() public {
         // Role Creation
@@ -107,13 +109,29 @@ contract AssetTokenTest is Test {
         assertEq(token, address(underlyingToken));   
     }
 
-    /// function getExchangeRate()
-    function testGetExchangeRate() public {
+    /// function getFeeRate()
+    function testGetFeeRate() public {
+        uint256 amount = 1000;
         vm.startPrank(user);
-        uint256 exchangeRate = asset.getExchangeRate();
+        uint256 feeRate = asset.getFeeRate(amount);
         vm.stopPrank();
 
-        assertEq(exchangeRate, 1e18);
+        assertEq(feeRate, 3);
+    }
+
+    // function updateFeeRate(uint256 amount)
+    function testUpdateFeeRate() public {
+        uint256 updatedFee = 2e15;
+        uint256 originalFee = asset.feeRate();
+
+        vm.startPrank(lendMixer);
+        vm.expectEmit(true, true, false, false);
+        emit AssetToken__updateFeeRate(originalFee, updatedFee);
+        asset.updateFeeRate(updatedFee);
+        vm.stopPrank();
+
+        uint256 fee = asset.feeRate();
+        assertEq(fee, updatedFee);
     }
 }
 
