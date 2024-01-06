@@ -58,6 +58,62 @@ contract LendMixerTest is Test {
         token = new UnderlyingToken();
     }
 
+    // function setAssetTokenConfig(ERC20 token, bool permission) 
+    function testSetAssetTokenConfigPermissionTrue() public {
+        AssetToken assetToken;
+
+        vm.prank(user);
+        vm.expectEmit(true, false, true, false);
+        emit LendMixer__UpdateAssetTokenConfig(token, assetToken, true);
+        assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        address asset = address(ILendMixer(address(proxy)).getAssetTokenFromToken(token));
+        bool isSupport = ILendMixer(address(proxy)).isSupportToken(token);
+
+        assertEq(asset, address(assetToken));
+        assertEq(assetToken.name(), "LendMixer Underlying Token");
+        assertEq(assetToken.symbol(), "lUT");
+        assertEq(isSupport, true);
+    }
+
+    function testSetAssetTokenConfigAlreadyUnderService() public {
+        AssetToken assetToken;
+
+        vm.prank(user);
+        vm.expectEmit(true, false, true, false);
+        emit LendMixer__UpdateAssetTokenConfig(token, assetToken, true);
+        assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        vm.prank(user);
+        vm.expectRevert();
+        assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+    }
+
+    function testSetAssetTokenConfigPermissionFalse() public {
+        AssetToken assetToken;
+        address asset;
+        bool isSupport;
+
+        vm.expectEmit(true, false, true, false);
+        emit LendMixer__UpdateAssetTokenConfig(token, assetToken, true);
+        assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+        
+        asset = address(ILendMixer(address(proxy)).getAssetTokenFromToken(token));
+        isSupport = ILendMixer(address(proxy)).isSupportToken(token);
+
+        assertEq(asset, address(assetToken));
+        assertEq(isSupport, true);
+
+        vm.expectEmit(true, false, true, false);
+        emit LendMixer__UpdateAssetTokenConfig(token, assetToken, false);
+        assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, false);
+
+        asset = address(ILendMixer(address(proxy)).getAssetTokenFromToken(token));
+        isSupport = ILendMixer(address(proxy)).isSupportToken(token);
+
+        assertEq(asset, address(0));
+        assertEq(isSupport, false);
+    }
 
 }
 
