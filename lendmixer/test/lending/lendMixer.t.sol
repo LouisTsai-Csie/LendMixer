@@ -217,6 +217,21 @@ contract LendMixerTest is Test {
         vm.expectRevert();
         ILendMixer(address(proxy)).maxFlashLoan(address(token));
     }
+    
+    // function flashFee(address token, uint256 amount)
+    function testFlashFeeSuccess() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        uint256 balance = ILendMixer(address(proxy)).flashFee(address(token), 1e20);
+        assertEq(balance, 3e17);
+    } 
+
+    function testFlashFeeFailed() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, false);
+        
+        vm.expectRevert();
+        ILendMixer(address(proxy)).flashFee(address(token), 1e20);
+    }
 }
 
 /// @title simple underlying token
