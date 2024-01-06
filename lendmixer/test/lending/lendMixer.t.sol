@@ -185,6 +185,38 @@ contract LendMixerTest is Test {
         vm.stopPrank();
     }
 
+    // function maxFlashLoan(address token)
+    function testMaxFlashLoanSuccess() public {
+        AssetToken assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        deal(address(token), user, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+
+        vm.startPrank(user);
+        token.approve(address(proxy), 1e20);
+        ILendMixer(address(proxy)).deposit(token, 1e20);
+        vm.stopPrank();
+
+        uint256 maxFlashLoanAmount = ILendMixer(address(proxy)).maxFlashLoan(address(token));
+        assertEq(maxFlashLoanAmount, 1e20);
+    } 
+
+    function testMaxFlashLoanFailed() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        deal(address(token), user, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+
+        vm.startPrank(user);
+        token.approve(address(proxy), 1e20);
+        ILendMixer(address(proxy)).deposit(token, 1e20);
+        vm.stopPrank();
+
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, false);
+
+        vm.expectRevert();
+        ILendMixer(address(proxy)).maxFlashLoan(address(token));
+    }
 }
 
 /// @title simple underlying token
