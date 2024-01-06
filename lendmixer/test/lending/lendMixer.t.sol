@@ -115,6 +115,33 @@ contract LendMixerTest is Test {
         assertEq(isSupport, false);
     }
 
+    // function deposit(ERC20 token, uint256 amount)
+    function testDepositSuccess() public {
+        AssetToken assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        deal(address(token), user, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+
+        vm.startPrank(user);
+        token.approve(address(proxy), 1e20);
+        ILendMixer(address(proxy)).deposit(token, 1e20);
+        vm.stopPrank();
+
+        uint256 balance = assetToken.balanceOf(user);
+        assertEq(balance, 1e20);
+    }
+
+    function testDepositFailed() public {
+
+        deal(address(token), user, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+
+        vm.startPrank(user);
+        token.approve(address(proxy), 1e20);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).deposit(token, 1e20);
+        vm.stopPrank();
+    }
 }
 
 /// @title simple underlying token
