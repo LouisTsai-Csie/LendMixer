@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
@@ -231,6 +232,131 @@ contract LendMixerTest is Test {
         
         vm.expectRevert();
         ILendMixer(address(proxy)).flashFee(address(token), 1e20);
+    }
+
+    // function flashLoan(IERC3156FlashBorrower receiver, address token, uint256 amount, bytes calldata data)
+    function testFlashLoanSuccess() public {
+
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        vm.prank(user);
+        Receiver receiver = new Receiver(proxy);
+
+        deal(address(token), address(receiver), 1e20);
+        deal(address(token), address(proxy), 1e20);
+
+        vm.prank(user);
+        bool success = ILendMixer(address(proxy)).flashLoan(
+            address(receiver), 
+            address(token),
+            1e18, 
+            abi.encode(true, true)
+        );
+
+        assertTrue(success);
+    }
+
+    function testFlashLoanIsNotContract() public {
+
+        vm.prank(user);
+        vm.expectRevert();        
+        ILendMixer(address(proxy)).flashLoan(
+            user, 
+            address(token), 
+            0, 
+            abi.encode(true, true)
+        );
+    }
+    
+    function testFlashLoanTokenNotSupport() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, false);
+
+        Receiver receiver = new Receiver(proxy);
+
+        vm.prank(user);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).flashLoan(
+            address(receiver), 
+            address(token), 
+            0, 
+            abi.encode(true, true)
+        );
+    }
+
+    function testFlashLoanAmountNotEnough() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        vm.prank(user);
+        Receiver receiver = new Receiver(proxy);
+
+        deal(address(token), address(receiver), 1e20);
+        deal(address(token), address(proxy), 1e20);
+
+        vm.prank(user);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).flashLoan(
+            address(receiver), 
+            address(token), 
+            1e21, 
+            abi.encode(true, true)
+        );
+    }
+
+    function testFlashLoanRepayAmountNotEnough() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        vm.prank(user);
+        Receiver receiver = new Receiver(proxy);
+
+        deal(address(token), address(receiver), 1e20);
+        deal(address(token), address(proxy), 1e20);
+
+        vm.prank(user);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).flashLoan(
+            address(receiver), 
+            address(token), 
+            1e18, 
+            abi.encode(false, true)
+        );
+    }
+
+    function testFlashLoanReturnValueInvalid() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        vm.prank(user);
+        Receiver receiver = new Receiver(proxy);
+
+        deal(address(token), address(receiver), 1e20);
+        deal(address(token), address(proxy), 1e20);
+
+        vm.prank(user);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).flashLoan(
+            address(receiver), 
+            address(token), 
+            1e18, 
+            abi.encode(true, false)
+        );
+    }
+
+    function testFlashLoanNonReentrantDeposit() public {
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        vm.prank(user);
+        ReentrantReceiver receiver = new ReentrantReceiver(proxy);
+
+        deal(address(token), address(receiver), 1e20);
+        deal(address(token), address(proxy), 1e20);
+
+        vm.prank(user);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).flashLoan(
+            address(receiver), 
+            address(token), 
+            1e18, 
+            abi.encode(true, false)
+        );
     }
 }
 
