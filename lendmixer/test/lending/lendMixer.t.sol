@@ -142,6 +142,49 @@ contract LendMixerTest is Test {
         ILendMixer(address(proxy)).deposit(token, 1e20);
         vm.stopPrank();
     }
+
+    // function withdraw(AssetToken assetToken, uint256 amount)
+    function testWithdrawSuccess() public {
+        AssetToken assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        deal(address(token), user, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+
+        vm.startPrank(user);
+        token.approve(address(proxy), 1e20);
+        ILendMixer(address(proxy)).deposit(token, 1e20);
+        assertEq(token.balanceOf(user), 0);
+        assertEq(assetToken.balanceOf(user), 1e20);
+        vm.stopPrank();
+
+        vm.startPrank(user);
+        ILendMixer(address(proxy)).withdraw(assetToken, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+        assertEq(assetToken.balanceOf(user), 0);
+        vm.stopPrank();
+    }
+
+    function testWithdrawFailed() public {
+        AssetToken assetToken = ILendMixer(address(proxy)).setAssetTokenConfig(token, true);
+
+        deal(address(token), user, 1e20);
+        assertEq(token.balanceOf(user), 1e20);
+
+        vm.startPrank(user);
+        token.approve(address(proxy), 1e20);
+        ILendMixer(address(proxy)).deposit(token, 1e20);
+        assertEq(token.balanceOf(user), 0);
+        assertEq(assetToken.balanceOf(user), 1e20);
+        vm.stopPrank();
+
+        ILendMixer(address(proxy)).setAssetTokenConfig(token, false);
+
+        vm.startPrank(user);
+        vm.expectRevert();
+        ILendMixer(address(proxy)).withdraw(assetToken, 1e20);
+        vm.stopPrank();
+    }
+
 }
 
 /// @title simple underlying token
