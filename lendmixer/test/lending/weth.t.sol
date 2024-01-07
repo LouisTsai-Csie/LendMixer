@@ -425,6 +425,19 @@ contract WETHTest is Test {
         assertTrue(success);
         assertEq(user.balance, initialSupply);
     }
+
+    // function flashFee(address token, uint256) 
+    function testFlashFee() public {
+        vm.prank(user);
+        uint256 value = weth.flashFee(address(weth), 0);
+        assertEq(value, 0);
+    }
+
+    function testFlashFeeTokenNotSupport() public {
+        vm.prank(user);
+        vm.expectRevert();
+        weth.flashFee(address(0), 0);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
