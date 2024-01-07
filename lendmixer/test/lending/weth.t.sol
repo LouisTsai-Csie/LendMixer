@@ -369,6 +369,62 @@ contract WETHTest is Test {
         assertEq(user0.balance, initialSupply);
     }
 
+    // function transferAndCall(address to, uint256 amount, bytes calldata data)
+    function testTransferAndCallSuccess() public {
+        bytes memory data = abi.encode(user0, true);
+
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+        
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, address(receiver), initialSupply);
+        bool success = weth.transferAndCall(address(receiver), initialSupply, data);
+
+        assertTrue(success);
+    }
+
+    function testTransferAndCallBalanceNotEnough() public {
+        bytes memory data = abi.encode(user0, true);
+
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.transferAndCall(address(receiver), initialSupply*2, data);
+    }
+    
+    function testTransferAndCallTokenTransferFailed() public {
+        bytes memory data = abi.encode(user0, false);
+
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.transferAndCall(address(receiver), initialSupply, data);
+    }
+
+    function testTransferAndCallInvalidAddress() public {
+        bytes memory data = abi.encode(user0, false);
+
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, address(0), initialSupply);
+        bool success =  weth.transferAndCall(address(0), initialSupply, data);
+
+        assertTrue(success);
+        assertEq(user.balance, initialSupply);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
