@@ -145,6 +145,7 @@ contract WETH is IERC20 {
         }
         return true;
     }
+
     function transferFrom(address from, address to, uint256 amount) external returns(bool) {
         if(from!=msg.sender) {
             uint256 allowanceAmount = _allowance[from][msg.sender];
@@ -168,4 +169,29 @@ contract WETH is IERC20 {
         }
         return true;
     }
+
+    function transferAndCall(address to, uint256 amount, bytes calldata data) external returns(bool) {
+        bool success;
+        
+        uint256 balance = _balanceOf[msg.sender];
+        
+        if(balance<amount) revert WETH__BalanceNotEnough();
+
+        if(to!=address(0) && to!=address(this)) {
+            _balanceOf[msg.sender] -= amount;
+            _balanceOf[to] += amount;
+            emit Transfer(msg.sender, to, amount);
+
+            success = IReceiver(to).onTokenTransfer(msg.sender, amount, data);
+            if(!success) revert();
+        } else {
+            _balanceOf[msg.sender] -= amount;
+            emit Transfer(msg.sender, address(0), amount);
+            (success, ) = msg.sender.call{value: amount}("");
+            if(!success) revert WETH__EtherTransferFailed();
+        }
+
+        return true;
+    }
+
 }
