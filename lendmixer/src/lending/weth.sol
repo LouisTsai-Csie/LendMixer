@@ -194,4 +194,41 @@ contract WETH is IERC20 {
         return true;
     }
 
+    function maxFlashLoan(address token) external view returns (uint256) {
+        if(token!=address(this)) revert WETH__TokenNotSupport();
+        return type(uint128).max - flashMintAmount;
+    }
+
+    function flashFee(address token, uint256) external view returns (uint256) {
+        if(token!=address(this)) revert WETH__TokenNotSupport();
+        return 0;
+    }
+
+    function flashLoan(
+        address receiver,
+        address token,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        if(token!=address(this)) revert WETH__TokenNotSupport();
+
+        if(amount>type(uint128).max) revert WETH__FlashMintAmountExceed(); 
+
+        flashMintAmount += amount;
+
+        if(flashMintAmount>type(uint128).max) revert WETH__FlashMintTotalExceed();
+
+        _balanceOf[address(receiver)] += amount;
+        bytes32 retunValue = IERC3156FlashBorrower(receiver).onFlashLoan(msg.sender, address(this), amount, 0, data);
+
+        if(retunValue!=onFlashLoanReturnValue) revert WETH__FlashLoanNotReceived();
+        
+        uint256 balance = _balanceOf[address(receiver)];
+        if(balance<amount) revert WETH__FlashMintBalanceNotEnough();
+        _balanceOf[address(receiver)] -= amount;
+        
+        emit WETH__FlashMint(msg.sender, receiver, amount);
+        flashMintAmount -= amount;
+        return true;
+    }
 }
