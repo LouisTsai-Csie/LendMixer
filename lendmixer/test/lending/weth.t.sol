@@ -107,6 +107,35 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.depositToAndCall{value: initialSupply}(address(receiver), data);
     }
+
+    // function withdraw(uint256 amount)
+    function testWithdrawSuccess() public {
+        uint256 balance;
+
+        _deposit(user, initialSupply);
+
+        balance = weth.balanceOf(user);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, address(0), initialSupply/2);
+        weth.withdraw(balance/2);
+
+        balance = weth.balanceOf(user);
+        assertEq(balance, initialSupply/2);
+    }
+
+    function testWithdrawBalanceNotEnough() public {
+        uint256 balance;
+
+        _deposit(user, initialSupply);
+
+        balance = weth.balanceOf(user);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.withdraw(balance*2);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
