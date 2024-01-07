@@ -58,6 +58,16 @@ contract WETHTest is Test {
         assertTrue(success);
         assertEq(afterAllowance, beforeAllowance+amount);
     }
+
+    /*//////////////////////////////////////////////////////////////
+                               FUNCTION
+    //////////////////////////////////////////////////////////////*/
+
+    // function deposit()
+    function testDeposit() public {
+
+        _deposit(user, initialSupply);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
