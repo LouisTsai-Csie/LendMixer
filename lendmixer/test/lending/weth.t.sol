@@ -165,6 +165,68 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.withdrawTo(payable(user0), initialSupply*2);
     }
+
+    // function withdrawFrom(address from, address payable to, uint256 amount)
+    function testWithdrawFromMsgSender() public {
+        uint256 balance;
+
+        _deposit(user, initialSupply);
+
+        balance = weth.balanceOf(user);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, address(0), initialSupply);
+        weth.withdrawFrom(user, payable(user0), initialSupply);
+
+        balance = user0.balance;
+        assertEq(balance, initialSupply);
+    }
+
+    function testWithdrawFromMsgSenderBalanceNotEnough() public {
+        uint256 balance;
+
+        _deposit(user, initialSupply);
+
+        balance = weth.balanceOf(user);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.withdrawFrom(user, payable(user0), initialSupply*2);
+    }
+
+    function testWithdrawFromNotMsgSender() public {
+        uint256 balance;
+        uint256 allowanceAmount;
+
+        _deposit(user, initialSupply);
+
+        balance = weth.balanceOf(user);
+
+        _approve(user, user0, initialSupply);
+
+        vm.prank(user0);
+        vm.expectEmit(true, true, true, true);
+        emit Approval(user,  user0, initialSupply);
+        weth.withdrawFrom(user, payable(user0), initialSupply);
+
+        balance = user0.balance;
+        allowanceAmount = weth.allowance(user, user0);
+        
+        assertEq(balance, initialSupply);
+        assertEq(allowanceAmount, 0);
+    }   
+
+    function testWithdrawFromNotMsgSenderBalanceNotEnough() public {
+
+        _deposit(user, initialSupply);
+
+        _approve(user, user0, initialSupply);
+
+        vm.prank(user0);
+        vm.expectRevert();
+        weth.withdrawFrom(user, payable(user0), initialSupply*2);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
