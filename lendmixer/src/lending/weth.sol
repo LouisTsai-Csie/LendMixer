@@ -47,4 +47,63 @@ contract WETH is IERC20 {
     //////////////////////////////////////////////////////////////*/
     constructor() payable {}
 
+    /*//////////////////////////////////////////////////////////////
+                                FUNCTION
+    //////////////////////////////////////////////////////////////*/
+
+    function totalSupply() external view returns(uint256) {
+        return address(this).balance + flashMintAmount;
+    }
+
+    function balanceOf(address account) public view returns(uint256) {
+        return _balanceOf[account];
+    }
+
+    function allowance(address owner, address spender) external view returns(uint256){
+        return _allowance[owner][spender];
+    }
+    function approve(address spender, uint256 amount) external returns(bool) {
+        _allowance[msg.sender][spender] += amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+    function transfer(address to, uint256 amount) external returns(bool) {
+        uint256 balance = _balanceOf[msg.sender];
+        if(balance < amount) revert WETH__BalanceNotEnough();
+
+        if(to!=address(0) && to!=address(this)) {
+            _balanceOf[msg.sender] -= amount;
+            _balanceOf[to] += amount;
+            emit Transfer(msg.sender, to, amount);
+        } else {
+            _balanceOf[msg.sender] -= amount;
+            emit Transfer(msg.sender, address(0), amount);
+            (bool success, ) = msg.sender.call{value: amount}("");
+            if(!success) revert WETH__EtherTransferFailed();
+        }
+        return true;
+    }
+    function transferFrom(address from, address to, uint256 amount) external returns(bool) {
+        if(from!=msg.sender) {
+            uint256 allowanceAmount = _allowance[from][msg.sender];
+            if(allowanceAmount < amount) revert WETH__AllowanceNotEnough();
+            _allowance[from][msg.sender] -= amount;
+            emit Approval(from, msg.sender, allowanceAmount - amount);
+        }
+
+        uint256 balance = _balanceOf[from];
+        if(balance<amount) revert WETH__BalanceNotEnough();
+
+        if(to != address(0) && to != address(this)) {
+            _balanceOf[from] -= amount;
+            _balanceOf[to] += amount;
+            emit Transfer(from, to, amount);
+        } else {
+            _balanceOf[from] -= amount;
+            emit Transfer(msg.sender, address(0), amount);
+            (bool success, ) = msg.sender.call{value: amount}("");
+            if(!success) revert WETH__EtherTransferFailed();
+        }
+        return true;
+    }
 }
