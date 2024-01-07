@@ -438,6 +438,19 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.flashFee(address(0), 0);
     }
+
+    // function maxFlashLoan(address token)
+    function testMaxFlashLoan() public {
+        vm.prank(user);
+        uint256 value = weth.maxFlashLoan(address(weth));
+        assertEq(value, type(uint128).max);
+    }
+
+    function testMaxFlashLoanTokenNotsupport() public {
+        vm.prank(user);
+        vm.expectRevert();
+        weth.maxFlashLoan(address(0));
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
