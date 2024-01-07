@@ -231,4 +231,14 @@ contract WETH is IERC20 {
         flashMintAmount -= amount;
         return true;
     }
+
+    receive() external payable {
+        _balanceOf[msg.sender] += msg.value;
+        emit Transfer(address(0), msg.sender, msg.value);
+    }
+
+    fallback() external payable {
+        _balanceOf[msg.sender] += msg.value;
+        emit Transfer(address(0), msg.sender, msg.value);
+    }
 }
