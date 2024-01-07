@@ -68,6 +68,17 @@ contract WETHTest is Test {
 
         _deposit(user, initialSupply);
     }
+
+    // function depositTo(address to)
+    function testDepositTo() public {
+        vm.prank(user);
+        vm.expectEmit(true, true, true, false);
+        emit Transfer(address(0), user0, initialSupply);
+        weth.depositTo{value: initialSupply}(user0);
+
+        uint256 balance = weth.balanceOf(user0);
+        assertEq(balance, initialSupply);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
