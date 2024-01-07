@@ -80,6 +80,42 @@ contract WETH is IERC20 {
         if(!success) revert WETH__TokenTransferFailed();
         return true;
     }
+
+    function withdraw(uint256 amount) external payable{
+        uint256 balance = _balanceOf[msg.sender];
+        if(amount > balance) revert WETH__BalanceNotEnough();
+        _balanceOf[msg.sender] -= amount;
+        emit Transfer(msg.sender, address(0), amount);
+        (bool success, ) = msg.sender.call{value: amount}("");
+        if(!success) revert WETH__EtherTransferFailed();
+    }
+
+    function withdrawTo(address payable to, uint256 amount) external payable{
+        uint256 balance = _balanceOf[msg.sender];
+        if(amount > balance) revert WETH__BalanceNotEnough();
+        _balanceOf[msg.sender] -= msg.value;
+        emit Transfer(msg.sender, address(0), amount);
+        (bool success, ) = to.call{value: amount}("");
+        if(!success) revert WETH__EtherTransferFailed();
+    }
+
+    function withdrawFrom(address from, address payable to, uint256 amount) external {
+        if(from != msg.sender) {
+            uint256 allowanceAmount = _allowance[from][to];
+            if(allowanceAmount < amount) revert WETH__AllowanceNotEnough();
+            _allowance[from][to] = allowanceAmount - amount;
+            emit Approval(from, msg.sender, amount);
+        }
+
+        uint256 balance = _balanceOf[from];
+        if(balance < amount) revert WETH__BalanceNotEnough();
+        _balanceOf[from] -= amount;
+        emit Transfer(from, address(0), amount);
+
+        (bool success, ) = to.call{value: amount}("");
+        if(!success) revert WETH__EtherTransferFailed();
+    }
+
     function approve(address spender, uint256 amount) external returns(bool) {
         _allowance[msg.sender][spender] += amount;
         emit Approval(msg.sender, spender, amount);
