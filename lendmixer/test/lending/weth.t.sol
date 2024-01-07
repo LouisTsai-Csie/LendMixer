@@ -261,6 +261,45 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.approveAndCall(address(receiver), initialSupply, data);
     }
+
+    // function transfer(address to, uint256 amount)
+    function testTransferSuccesss() public {
+        
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, user0, initialSupply);
+        bool success = weth.transfer(user0, initialSupply);
+
+        assertTrue(success);
+        assertEq(weth.balanceOf(user), 0);
+        assertEq(weth.balanceOf(user0), initialSupply);
+    }
+
+    function testTransferBalanceNotEnough() public {
+        
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.transfer(user0, initialSupply*2);
+    }
+
+    function testTransferToInvalidAddress() public {
+        
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, address(0), initialSupply);
+        bool success = weth.transfer(address(0), initialSupply);
+
+        assertTrue(success);
+
+        uint256 balance = user.balance;
+        assertEq(balance, initialSupply);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
