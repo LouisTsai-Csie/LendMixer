@@ -121,6 +121,14 @@ contract WETH is IERC20 {
         emit Approval(msg.sender, spender, amount);
         return true;
     }
+
+    function approveAndCall(address spender, uint256 amount, bytes calldata data) external returns(bool) {
+        _allowance[msg.sender][spender] += amount;
+        emit Approval(msg.sender, spender, amount);
+        (bool success) = IReceiver(spender).onTokenApproval(msg.sender, amount, data);
+        if(!success) revert WETH__TokenApprovalFailed();
+    }
+
     function transfer(address to, uint256 amount) external returns(bool) {
         uint256 balance = _balanceOf[msg.sender];
         if(balance < amount) revert WETH__BalanceNotEnough();
