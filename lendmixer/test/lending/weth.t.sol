@@ -30,6 +30,34 @@ contract WETHTest is Test {
         deal(user, initialSupply);
     }
 
+    /*//////////////////////////////////////////////////////////////
+                                HELPER
+    //////////////////////////////////////////////////////////////*/
+    
+    function _deposit(address addr, uint256 amount) internal {
+        uint256 beforeBalance = weth.balanceOf(user);
+
+        vm.prank(addr);
+        vm.expectEmit(true, true, true, false);
+        emit Transfer(address(0), addr, amount);
+        weth.deposit{value: amount}();
+
+        uint256 afterBalance = weth.balanceOf(user);
+        assertEq(afterBalance, beforeBalance+amount);
+    }
+
+    function _approve(address from, address to, uint256 amount) internal {
+        uint256 beforeAllowance = weth.allowance(from, to);
+        vm.prank(from);
+        vm.expectEmit(true, true, true, true);
+        emit Approval(from, to, amount);
+        bool success = weth.approve(to, amount);
+
+        uint256 afterAllowance = weth.allowance(from, to);
+
+        assertTrue(success);
+        assertEq(afterAllowance, beforeAllowance+amount);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
