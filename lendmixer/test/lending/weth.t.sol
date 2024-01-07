@@ -233,6 +233,34 @@ contract WETHTest is Test {
 
         _approve(user, user0, initialSupply);
     }
+
+    // function approveAndCall(address spender, uint256 amount, bytes calldata data)
+    function testApproveAndCallSuccess() public {
+        bytes memory data = abi.encode(user, true);
+
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Approval(user, address(receiver), initialSupply);
+        weth.approveAndCall(address(receiver), initialSupply, data);
+    }
+
+    function testApproveAndCallFailed() public {
+        bytes memory data = abi.encode(user, false);
+
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.approveAndCall(address(receiver), initialSupply, data);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
