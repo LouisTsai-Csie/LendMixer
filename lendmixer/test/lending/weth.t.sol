@@ -300,6 +300,75 @@ contract WETHTest is Test {
         uint256 balance = user.balance;
         assertEq(balance, initialSupply);
     }
+
+    // function transferFrom(address from, address to, uint256 amount)
+    function testTransferFromSuccess() public {
+        
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, user0, initialSupply);
+        bool success = weth.transferFrom(user, user0, initialSupply);
+
+        assertTrue(success);
+        assertEq(weth.balanceOf(user0), initialSupply);
+    }
+
+    function testTransferFromBalanceNotEnough() public {
+        
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.transferFrom(user, user0, initialSupply*2);
+    }
+
+    function testTransferFromNotMsgSender() public {
+        
+        _deposit(user, initialSupply);
+
+        _approve(user, user0, initialSupply);
+
+        vm.prank(user0);
+        bool success = weth.transferFrom(user, user0, initialSupply);
+        assertTrue(success);
+    }
+
+    function testTransferFromNotMsgSenderAllowanceNotEnough() public {
+    
+        _deposit(user, initialSupply);
+
+        vm.prank(user0);
+        vm.expectRevert();
+        weth.transferFrom(user, user0, initialSupply*2);
+    }
+
+    function testTransferFromMsgSenderToInvalidAddress() public {
+        _deposit(user, initialSupply);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user, address(0), initialSupply);
+        bool success = weth.transferFrom(user, address(0), initialSupply);
+
+        assertTrue(success);
+        assertEq(user.balance, initialSupply);
+    }
+
+    function testTransferFromNotMsgSenderToInvalidAddress() public {
+
+        _deposit(user, initialSupply);
+
+        _approve(user, user0, initialSupply);
+
+        vm.prank(user0);
+        bool success = weth.transferFrom(user, address(0), initialSupply);
+
+        assertTrue(success);
+        assertEq(user0.balance, initialSupply);
+    }
+
 contract TransferRecevier is Test {
 
     WETH internal weth;
