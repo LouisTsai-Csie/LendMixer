@@ -516,6 +516,19 @@ contract WETHTest is Test {
 
         assertEq(weth.balanceOf(user), initialSupply);
     }
+
+    // fallback()
+    function testFallbackSuccess() public {
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(address(0), user, initialSupply);
+        (bool success, ) = address(weth).call{value: initialSupply}("fallback");
+        require(success, "Transfer Failed");
+
+        assertEq(weth.balanceOf(user), initialSupply);
+    }
+}
+
 contract TransferRecevier is Test {
 
     WETH internal weth;
