@@ -62,6 +62,24 @@ contract WETH is IERC20 {
     function allowance(address owner, address spender) external view returns(uint256){
         return _allowance[owner][spender];
     }
+
+    function deposit() external payable {
+        _balanceOf[msg.sender] += msg.value;
+        emit Transfer(address(0), msg.sender, msg.value);
+    }
+
+    function depositTo(address to) external payable {
+        _balanceOf[to] += msg.value;
+        emit Transfer(address(0), to, msg.value);
+    }
+
+    function depositToAndCall(address to, bytes calldata data) external payable returns(bool) {
+        _balanceOf[to] += msg.value;
+        emit Transfer(address(0), to, msg.value);
+        bool success = IReceiver(to).onTokenTransfer(msg.sender, msg.value, data);
+        if(!success) revert WETH__TokenTransferFailed();
+        return true;
+    }
     function approve(address spender, uint256 amount) external returns(bool) {
         _allowance[msg.sender][spender] += amount;
         emit Approval(msg.sender, spender, amount);
