@@ -451,6 +451,59 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.maxFlashLoan(address(0));
     }
+
+    // function flashLoan(address receiver, address token, uint256 amount, bytes calldata data)
+    function testFlashLoanSuccess() public {
+        bytes memory data = abi.encode(user0, true, true);
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit WETH__FlashMint(user, address(receiver), initialSupply);
+        bool success = weth.flashLoan(address(receiver), address(weth), initialSupply, data);
+        assertTrue(success);
+    }
+
+    function testFlashLoanTokenNotSupport() public {
+        bytes memory data = abi.encode(user0, true, true);
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.flashLoan(address(receiver), address(0), initialSupply, data);
+    }
+
+    function testFlashLoanAmountExceed() public {
+        bytes memory data = abi.encode(user0, true, true);
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.flashLoan(address(receiver), address(weth), type(uint256).max, data);
+    }
+
+    function testFlashLoanReturnValueFailed() public {
+        bytes memory data = abi.encode(user0, true, false);
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.flashLoan(address(receiver), address(weth), initialSupply, data);
+    }
+
+    function testFlashLoanBalanceNotEnough() public {
+        bytes memory data = abi.encode(user0, false, true);
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.flashLoan(address(receiver), address(weth), initialSupply, data);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
