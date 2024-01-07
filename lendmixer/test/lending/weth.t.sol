@@ -79,6 +79,34 @@ contract WETHTest is Test {
         uint256 balance = weth.balanceOf(user0);
         assertEq(balance, initialSupply);
     }
+
+    // function depositToAndCall(address to, bytes calldata data)
+    function testDepositToAndCallSuccess() public {
+        bytes memory data = abi.encode(user0, true); 
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(address(0), address(receiver), initialSupply);
+        bool success = weth.depositToAndCall{value: initialSupply}(address(receiver), data);
+        assertTrue(success);
+
+        uint256 balance = user0.balance;
+        assertEq(balance, initialSupply);
+    }
+
+    function testDepositToAndCallFailed() public {
+        bytes memory data = abi.encode(user0, false);
+
+        vm.prank(user);
+        TransferRecevier receiver = new TransferRecevier(weth);
+
+        vm.prank(user);
+        vm.expectRevert();
+        weth.depositToAndCall{value: initialSupply}(address(receiver), data);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
