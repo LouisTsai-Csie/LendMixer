@@ -227,6 +227,12 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.withdrawFrom(user, payable(user0), initialSupply*2);
     }
+
+    // function approve(address spender, uint256 amount)
+    function testApprove() public {
+
+        _approve(user, user0, initialSupply);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
