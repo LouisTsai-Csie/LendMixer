@@ -504,6 +504,18 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.flashLoan(address(receiver), address(weth), initialSupply, data);
     }
+    
+
+    // receive()
+    function testReceiveSuccess() public {
+        vm.prank(user);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(address(0), user, initialSupply);
+        (bool success, ) = address(weth).call{value: initialSupply}("");
+        require(success, "Transfer Failed");
+
+        assertEq(weth.balanceOf(user), initialSupply);
+    }
 contract TransferRecevier is Test {
 
     WETH internal weth;
