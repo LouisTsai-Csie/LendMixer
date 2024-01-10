@@ -13,9 +13,9 @@ contract Proxy {
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLE
     //////////////////////////////////////////////////////////////*/
-    bytes32 private constant IMPLEMENTATION_SLOT = bytes32(uint256(keccak256("eip1967.proxy.implementation"))-1);
-    bytes32 private constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin"))-1);
-    
+    bytes32 private constant IMPLEMENTATION_SLOT = bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1);
+    bytes32 private constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
+
     /*//////////////////////////////////////////////////////////////
                                 EVENT
     //////////////////////////////////////////////////////////////*/
@@ -25,7 +25,7 @@ contract Proxy {
                                 MODIFIER
     //////////////////////////////////////////////////////////////*/
     modifier ifAdmin() {
-        if(msg.sender==_getAdmin()) {
+        if (msg.sender == _getAdmin()) {
             _;
         } else {
             _delegate();
@@ -42,27 +42,29 @@ contract Proxy {
     /*//////////////////////////////////////////////////////////////
                                FUNCTION
     //////////////////////////////////////////////////////////////*/
-    function _getAdmin() public view returns(address) {
+    function _getAdmin() public view returns (address) {
         return StorageSlot.getAddressSlot(ADMIN_SLOT).value;
     }
 
     function _setAdmin(address _admin) private {
-        if(_admin==address(0)) {
+        if (_admin == address(0)) {
             revert Proxy__ZeroAddressNotAllowed();
         }
         StorageSlot.getAddressSlot(ADMIN_SLOT).value = _admin;
     }
-    
-    function _getImplementation() private view returns(address) {
+
+    function _getImplementation() private view returns (address) {
         return StorageSlot.getAddressSlot(IMPLEMENTATION_SLOT).value;
     }
 
     function _setImplementation(address _implementation) private {
         uint256 size;
 
-        assembly { size := extcodesize(_implementation) }
+        assembly {
+            size := extcodesize(_implementation)
+        }
 
-        if(size==0) revert Proxy__ImplementationNotContract();
+        if (size == 0) revert Proxy__ImplementationNotContract();
 
         StorageSlot.getAddressSlot(IMPLEMENTATION_SLOT).value = _implementation;
     }
@@ -75,11 +77,11 @@ contract Proxy {
         _setImplementation(_implementation);
     }
 
-    function getAdmin() external ifAdmin returns(address) {
+    function getAdmin() external ifAdmin returns (address) {
         return _getAdmin();
     }
 
-    function getImplementation() external ifAdmin returns(address) {
+    function getImplementation() external ifAdmin returns (address) {
         return _getImplementation();
     }
 
@@ -95,19 +97,15 @@ contract Proxy {
             mstore(freeMemoryPosition, add(returndataMemoryOffset, returndatasize()))
             returndatacopy(returndataMemoryOffset, 0x0, returndatasize())
             switch ret
-            case 0 {
-                revert(returndataMemoryOffset, returndatasize())
-            }
-            default {
-                return(returndataMemoryOffset, returndatasize())
-            }
+            case 0 { revert(returndataMemoryOffset, returndatasize()) }
+            default { return(returndataMemoryOffset, returndatasize()) }
         }
-    } 
+    }
 
     fallback() external payable {
         _delegate();
     }
-    
+
     receive() external payable {
         _delegate();
     }
