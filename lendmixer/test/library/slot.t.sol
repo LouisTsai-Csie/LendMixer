@@ -33,6 +33,16 @@ contract SlotTest is Test {
         assertEq(value2, address(0x02));
         assertEq(value3, address(0x03));
     }
+
+    function testFuzzGetAddressSlot(address key, address value) public {
+        storageLayout.addValue(key, value);
+
+        bytes32 slot = keccak256(abi.encode(key, 0));
+
+        address slotValue = storageLayout.getValue(slot);
+
+        assertEq(slotValue, value);
+    }
 }
 
 contract StorageLayout {
