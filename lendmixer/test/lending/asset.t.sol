@@ -3,12 +3,10 @@ pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {AssetToken} from "../../src/lending/asset.sol";
 
-
 contract AssetTokenTest is Test {
-
     address internal lendMixer;
     address internal user;
     ERC20 internal underlyingToken;
@@ -18,7 +16,6 @@ contract AssetTokenTest is Test {
     event AssetToken__burnToken(address account, uint256 amount);
     event AssetToken__updateFeeRate(uint256 originalFee, uint256 updatedFee);
 
-
     function setUp() public {
         // Role Creation
         lendMixer = makeAddr("lendMixer");
@@ -26,7 +23,7 @@ contract AssetTokenTest is Test {
 
         // Underlying Token Creation
         underlyingToken = new UnderlyingToken();
-        
+
         // Asset Token Parameter
         string memory assetName = "AssetToken";
         string memory assetSymbol = "AssetSymbol";
@@ -40,10 +37,10 @@ contract AssetTokenTest is Test {
         assertEq(asset.symbol(), assetSymbol);
     }
 
-    /// function mint(address to, uint256 amount) 
+    /// function mint(address to, uint256 amount)
     function testAssetTokenMintOperationSuccess() public {
         uint256 mintAmount = 1e18;
-        
+
         vm.startPrank(lendMixer);
 
         vm.expectEmit(true, false, false, false);
@@ -64,13 +61,13 @@ contract AssetTokenTest is Test {
         asset.mint(user, mintAmount);
         vm.stopPrank();
     }
-    
+
     /// burn(address account, uint256 amount)
     function testAssetTokenBurnOperationSuccess() public {
         uint256 amount = 1e18;
 
         vm.startPrank(lendMixer);
-        
+
         vm.expectEmit(true, false, false, false);
         emit AssetToken__mintToken(user, amount);
         asset.mint(user, amount);
@@ -106,7 +103,7 @@ contract AssetTokenTest is Test {
         address token = address(asset.getUnderlyingToken());
         vm.stopPrank();
 
-        assertEq(token, address(underlyingToken));   
+        assertEq(token, address(underlyingToken));
     }
 
     /// function getFeeRate()
@@ -135,12 +132,10 @@ contract AssetTokenTest is Test {
     }
 }
 
-
 /// @title simple underlying token
 /// @notice underlying token used for lending protocol
 /// @dev follow oppenzeppelin implementation
 contract UnderlyingToken is ERC20 {
-
     uint256 internal constant initialSupply = 1e40;
 
     constructor() ERC20("Underlying Token", "UT") {
