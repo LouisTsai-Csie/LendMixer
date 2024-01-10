@@ -3,11 +3,11 @@ pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 
-import { WETH } from "../../src/lending/weth.sol";
- 
+import {WETH} from "../../src/lending/weth.sol";
+
 contract WETHTest is Test {
     WETH internal weth;
-    
+
     address internal user;
     address internal user0;
 
@@ -26,14 +26,14 @@ contract WETHTest is Test {
         weth = new WETH();
 
         // Token Distribution
-        
+
         deal(user, initialSupply);
     }
 
     /*//////////////////////////////////////////////////////////////
                                 HELPER
     //////////////////////////////////////////////////////////////*/
-    
+
     function _deposit(address addr, uint256 amount) internal {
         uint256 beforeBalance = weth.balanceOf(user);
 
@@ -43,7 +43,7 @@ contract WETHTest is Test {
         weth.deposit{value: amount}();
 
         uint256 afterBalance = weth.balanceOf(user);
-        assertEq(afterBalance, beforeBalance+amount);
+        assertEq(afterBalance, beforeBalance + amount);
     }
 
     function _approve(address from, address to, uint256 amount) internal {
@@ -56,7 +56,7 @@ contract WETHTest is Test {
         uint256 afterAllowance = weth.allowance(from, to);
 
         assertTrue(success);
-        assertEq(afterAllowance, beforeAllowance+amount);
+        assertEq(afterAllowance, beforeAllowance + amount);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -65,7 +65,6 @@ contract WETHTest is Test {
 
     // function deposit()
     function testDeposit() public {
-
         _deposit(user, initialSupply);
     }
 
@@ -82,7 +81,7 @@ contract WETHTest is Test {
 
     // function depositToAndCall(address to, bytes calldata data)
     function testDepositToAndCallSuccess() public {
-        bytes memory data = abi.encode(user0, true); 
+        bytes memory data = abi.encode(user0, true);
 
         vm.prank(user);
         TransferRecevier receiver = new TransferRecevier(weth);
@@ -118,11 +117,11 @@ contract WETHTest is Test {
 
         vm.prank(user);
         vm.expectEmit(true, true, true, true);
-        emit Transfer(user, address(0), initialSupply/2);
-        weth.withdraw(balance/2);
+        emit Transfer(user, address(0), initialSupply / 2);
+        weth.withdraw(balance / 2);
 
         balance = weth.balanceOf(user);
-        assertEq(balance, initialSupply/2);
+        assertEq(balance, initialSupply / 2);
     }
 
     function testWithdrawBalanceNotEnough() public {
@@ -134,7 +133,7 @@ contract WETHTest is Test {
 
         vm.prank(user);
         vm.expectRevert();
-        weth.withdraw(balance*2);
+        weth.withdraw(balance * 2);
     }
 
     // function withdrawTo(address payable to, uint256 amount)
@@ -163,7 +162,7 @@ contract WETHTest is Test {
 
         vm.prank(user);
         vm.expectRevert();
-        weth.withdrawTo(payable(user0), initialSupply*2);
+        weth.withdrawTo(payable(user0), initialSupply * 2);
     }
 
     // function withdrawFrom(address from, address payable to, uint256 amount)
@@ -192,7 +191,7 @@ contract WETHTest is Test {
 
         vm.prank(user);
         vm.expectRevert();
-        weth.withdrawFrom(user, payable(user0), initialSupply*2);
+        weth.withdrawFrom(user, payable(user0), initialSupply * 2);
     }
 
     function testWithdrawFromNotMsgSender() public {
@@ -207,30 +206,28 @@ contract WETHTest is Test {
 
         vm.prank(user0);
         vm.expectEmit(true, true, true, true);
-        emit Approval(user,  user0, initialSupply);
+        emit Approval(user, user0, initialSupply);
         weth.withdrawFrom(user, payable(user0), initialSupply);
 
         balance = user0.balance;
         allowanceAmount = weth.allowance(user, user0);
-        
+
         assertEq(balance, initialSupply);
         assertEq(allowanceAmount, 0);
-    }   
+    }
 
     function testWithdrawFromNotMsgSenderBalanceNotEnough() public {
-
         _deposit(user, initialSupply);
 
         _approve(user, user0, initialSupply);
 
         vm.prank(user0);
         vm.expectRevert();
-        weth.withdrawFrom(user, payable(user0), initialSupply*2);
+        weth.withdrawFrom(user, payable(user0), initialSupply * 2);
     }
 
     // function approve(address spender, uint256 amount)
     function testApprove() public {
-
         _approve(user, user0, initialSupply);
     }
 
@@ -264,7 +261,6 @@ contract WETHTest is Test {
 
     // function transfer(address to, uint256 amount)
     function testTransferSuccesss() public {
-        
         _deposit(user, initialSupply);
 
         vm.prank(user);
@@ -278,16 +274,14 @@ contract WETHTest is Test {
     }
 
     function testTransferBalanceNotEnough() public {
-        
         _deposit(user, initialSupply);
 
         vm.prank(user);
         vm.expectRevert();
-        weth.transfer(user0, initialSupply*2);
+        weth.transfer(user0, initialSupply * 2);
     }
 
     function testTransferToInvalidAddress() public {
-        
         _deposit(user, initialSupply);
 
         vm.prank(user);
@@ -303,7 +297,6 @@ contract WETHTest is Test {
 
     // function transferFrom(address from, address to, uint256 amount)
     function testTransferFromSuccess() public {
-        
         _deposit(user, initialSupply);
 
         vm.prank(user);
@@ -316,16 +309,14 @@ contract WETHTest is Test {
     }
 
     function testTransferFromBalanceNotEnough() public {
-        
         _deposit(user, initialSupply);
 
         vm.prank(user);
         vm.expectRevert();
-        weth.transferFrom(user, user0, initialSupply*2);
+        weth.transferFrom(user, user0, initialSupply * 2);
     }
 
     function testTransferFromNotMsgSender() public {
-        
         _deposit(user, initialSupply);
 
         _approve(user, user0, initialSupply);
@@ -336,12 +327,11 @@ contract WETHTest is Test {
     }
 
     function testTransferFromNotMsgSenderAllowanceNotEnough() public {
-    
         _deposit(user, initialSupply);
 
         vm.prank(user0);
         vm.expectRevert();
-        weth.transferFrom(user, user0, initialSupply*2);
+        weth.transferFrom(user, user0, initialSupply * 2);
     }
 
     function testTransferFromMsgSenderToInvalidAddress() public {
@@ -357,7 +347,6 @@ contract WETHTest is Test {
     }
 
     function testTransferFromNotMsgSenderToInvalidAddress() public {
-
         _deposit(user, initialSupply);
 
         _approve(user, user0, initialSupply);
@@ -377,7 +366,7 @@ contract WETHTest is Test {
 
         vm.prank(user);
         TransferRecevier receiver = new TransferRecevier(weth);
-        
+
         vm.prank(user);
         vm.expectEmit(true, true, true, true);
         emit Transfer(user, address(receiver), initialSupply);
@@ -396,9 +385,9 @@ contract WETHTest is Test {
 
         vm.prank(user);
         vm.expectRevert();
-        weth.transferAndCall(address(receiver), initialSupply*2, data);
+        weth.transferAndCall(address(receiver), initialSupply * 2, data);
     }
-    
+
     function testTransferAndCallTokenTransferFailed() public {
         bytes memory data = abi.encode(user0, false);
 
@@ -420,13 +409,13 @@ contract WETHTest is Test {
         vm.prank(user);
         vm.expectEmit(true, true, true, true);
         emit Transfer(user, address(0), initialSupply);
-        bool success =  weth.transferAndCall(address(0), initialSupply, data);
+        bool success = weth.transferAndCall(address(0), initialSupply, data);
 
         assertTrue(success);
         assertEq(user.balance, initialSupply);
     }
 
-    // function flashFee(address token, uint256) 
+    // function flashFee(address token, uint256)
     function testFlashFee() public {
         vm.prank(user);
         uint256 value = weth.flashFee(address(weth), 0);
@@ -504,14 +493,13 @@ contract WETHTest is Test {
         vm.expectRevert();
         weth.flashLoan(address(receiver), address(weth), initialSupply, data);
     }
-    
 
     // receive()
     function testReceiveSuccess() public {
         vm.prank(user);
         vm.expectEmit(true, true, true, true);
         emit Transfer(address(0), user, initialSupply);
-        (bool success, ) = address(weth).call{value: initialSupply}("");
+        (bool success,) = address(weth).call{value: initialSupply}("");
         require(success, "Transfer Failed");
 
         assertEq(weth.balanceOf(user), initialSupply);
@@ -522,7 +510,7 @@ contract WETHTest is Test {
         vm.prank(user);
         vm.expectEmit(true, true, true, true);
         emit Transfer(address(0), user, initialSupply);
-        (bool success, ) = address(weth).call{value: initialSupply}("fallback");
+        (bool success,) = address(weth).call{value: initialSupply}("fallback");
         require(success, "Transfer Failed");
 
         assertEq(weth.balanceOf(user), initialSupply);
@@ -530,46 +518,44 @@ contract WETHTest is Test {
 }
 
 contract TransferRecevier is Test {
-
     WETH internal weth;
     address internal owner;
+
     constructor(WETH _weth) payable {
         weth = _weth;
         owner = msg.sender;
     }
-    function onTokenTransfer(address from, uint256 amount, bytes calldata data) external returns(bool) {
-        require(msg.sender==address(weth), "Invalid Caller");
-        require(from==owner, "Invalid Initiator");
+
+    function onTokenTransfer(address from, uint256 amount, bytes calldata data) external returns (bool) {
+        require(msg.sender == address(weth), "Invalid Caller");
+        require(from == owner, "Invalid Initiator");
         weth.withdraw(amount);
         (address addr, bool result) = abi.decode(data, (address, bool));
-        (bool success, ) = addr.call{value: amount}("");
+        (bool success,) = addr.call{value: amount}("");
         require(success, "Transfer Failed");
         return result;
     }
 
-    function onTokenApproval(address from, uint256 amount, bytes memory data) external returns(bool) {
-        require(msg.sender==address(weth), "Invalid Caller");
-        require(from==owner, "Invalid Initiator");
+    function onTokenApproval(address from, uint256 amount, bytes memory data) external returns (bool) {
+        require(msg.sender == address(weth), "Invalid Caller");
+        require(from == owner, "Invalid Initiator");
         (address addr, bool result) = abi.decode(data, (address, bool));
         weth.withdrawFrom(from, payable(this), amount);
-        (bool success, ) = addr.call{value: amount}("");
+        (bool success,) = addr.call{value: amount}("");
         require(success, "Transfer Failed");
         return result;
     }
 
-    function onFlashLoan(
-        address initiator,
-        address token,
-        uint256 amount,
-        uint256 fee,
-        bytes calldata data
-    ) external returns (bytes32) {
-        require(msg.sender==address(weth), "Invalid Caller");
-        require(initiator==owner, "Invalid initiator");
-        require(token==address(weth), "Token Not Support");
+    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
+        external
+        returns (bytes32)
+    {
+        require(msg.sender == address(weth), "Invalid Caller");
+        require(initiator == owner, "Invalid initiator");
+        require(token == address(weth), "Token Not Support");
         (address addr, bool action, bool result) = abi.decode(data, (address, bool, bool));
-        if(!action) weth.transfer(addr, amount+fee);
-        if(result) return keccak256("ERC3156FlashBorrower.onFlashLoan");
+        if (!action) weth.transfer(addr, amount + fee);
+        if (result) return keccak256("ERC3156FlashBorrower.onFlashLoan");
         return keccak256("failed");
     }
 

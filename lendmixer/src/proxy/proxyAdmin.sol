@@ -25,7 +25,7 @@ contract ProxyAdmin {
                                 MODIFIER
     //////////////////////////////////////////////////////////////*/
     modifier onlyOwner() {
-        if(msg.sender!=owner) {
+        if (msg.sender != owner) {
             revert ProxyAdmin__OnlyOwner();
         }
         _;
@@ -41,10 +41,10 @@ contract ProxyAdmin {
     /*//////////////////////////////////////////////////////////////
                                 FUNCTION
     //////////////////////////////////////////////////////////////*/
-    function getProxyAdmin(address proxy) external view returns(address) {
+    function getProxyAdmin(address proxy) external view returns (address) {
         (bool success, bytes memory data) = proxy.staticcall(abi.encodeWithSignature("getAdmin()"));
 
-        if(!success) {
+        if (!success) {
             revert ProxyAdmin__StaticcallFailed();
         }
 
@@ -52,10 +52,10 @@ contract ProxyAdmin {
         return admin;
     }
 
-    function getProxyImplementation(address proxy) external view returns(address) {
+    function getProxyImplementation(address proxy) external view returns (address) {
         (bool success, bytes memory data) = proxy.staticcall(abi.encodeWithSignature("getImplementation()"));
 
-        if(success==false) {
+        if (success == false) {
             revert ProxyAdmin__StaticcallFailed();
         }
 
@@ -72,6 +72,4 @@ contract ProxyAdmin {
         IProxy(proxy).upgradeTo(implementation);
         emit ProxyAdmin__UpgradeImplementation(proxy, implementation);
     }
-
-    
 }
