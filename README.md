@@ -66,11 +66,12 @@ forge --version
 
 ### Repo
 
-1. Clone the repository with the following command: git clone git@github.com:LouisTsai-Csie/LendMixer.git
-Navigate to the project directory: cd lendmixer
-To view the testing layout, run the command: forge test -vvv. The expected result will resemble the following message.
+1. Clone the repository with the following command: `git clone git@github.com:LouisTsai-Csie/LendMixer.git`
+2. Navigate to the project directory: `cd lendmixer`
+3. To view the testing layout, run the command: `forge test -vvv`. 
+4. The expected result will resemble the following message.
 
-`Ran 4 test suites: 32 tests passed, 0 failed, 0 skipped (32 total tests)`
+```Ran 5 test suites: 72 tests passed, 0 failed, 0 skipped (72 total tests)```
 
 
 Testing layout for the project:
@@ -93,3 +94,47 @@ test
 **LendMixer**
 
 ![Sturcture](./lendmixer/img/structure.png)
+
+## Security
+
+There are 4 code analysis tool for this project.
+
+**Slither**
+
+The installation please refers to this [doc](https://github.com/crytic/slither)
+
+Run the following command and see the result in `slither_report.md`
+
+```
+make slither
+```
+
+**Slitherin**
+
+The installation please refers to this [doc](https://github.com/pessimistic-io/slitherin#enhancements--new-detectors)
+
+Run the following command and see the result in `slitherin_report.md`
+
+```
+make slitherin
+```
+
+**Aderyn**
+
+The installation please refers to this [doc](https://github.com/Cyfrin/aderyn)
+
+Run the following command and see the result in `aderyn_report.md`
+
+```
+make aderyn
+```
+
+**Mythril**
+
+The installation please refers to this [doc](https://github.com/Consensys/mythril)
+
+Run the following command and see the result in `mythril_report.md`
+
+```
+make myth path=<path-to-file>
+```
