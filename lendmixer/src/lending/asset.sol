@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.20;
 
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract AssetToken is ERC20 {
     /*//////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ contract AssetToken is ERC20 {
                                 MODIFIER
     //////////////////////////////////////////////////////////////*/
     modifier onlyLendMixer() {
-        if(msg.sender!=lendMixer) {
+        if (msg.sender != lendMixer) {
             revert AssetToken_onlyLendMixer();
         }
         _;
@@ -40,24 +40,18 @@ contract AssetToken is ERC20 {
     /*//////////////////////////////////////////////////////////////
                                 CONSTUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(
-        address _lendMixer,
-        ERC20 _underlyingToken,
-        string memory _assetName,
-        string memory _assetSymbol
-    )
+    constructor(address _lendMixer, ERC20 _underlyingToken, string memory _assetName, string memory _assetSymbol)
         ERC20(_assetName, _assetSymbol)
     {
-        if(_lendMixer==address(0)) revert AssetToken_zeroAddressNotAllowed();      
+        if (_lendMixer == address(0)) revert AssetToken_zeroAddressNotAllowed();
         lendMixer = _lendMixer;
 
-        if(address(_underlyingToken)==address(0)) revert AssetToken_zeroAddressNotAllowed();
+        if (address(_underlyingToken) == address(0)) revert AssetToken_zeroAddressNotAllowed();
         underlyingToken = _underlyingToken;
 
         feeRate = feeInitial;
     }
 
-    
     /*//////////////////////////////////////////////////////////////
                                 FUNCTION
     //////////////////////////////////////////////////////////////*/
@@ -72,18 +66,17 @@ contract AssetToken is ERC20 {
         emit AssetToken__burnToken(account, amount);
     }
 
-    function getUnderlyingToken() external view returns(ERC20){
+    function getUnderlyingToken() external view returns (ERC20) {
         return underlyingToken;
     }
 
-    function getFeeRate(uint256 amount) external view returns(uint256) {
+    function getFeeRate(uint256 amount) external view returns (uint256) {
         return amount * feeRate / feePrecision;
     }
 
-    function updateFeeRate(uint256 amount) external onlyLendMixer returns(uint256) {
+    function updateFeeRate(uint256 amount) external onlyLendMixer returns (uint256) {
         uint256 originalFee = feeRate;
         feeRate = amount;
         emit AssetToken__updateFeeRate(originalFee, amount);
     }
-
 }

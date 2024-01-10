@@ -133,7 +133,7 @@ contract ImplementationV1 {
         count = 1;
     }
 
-    function version() external pure returns(string memory) {
+    function version() external pure returns (string memory) {
         return "1.0";
     }
 }
@@ -145,7 +145,7 @@ contract ImplementationV2 {
         count = 2;
     }
 
-    function version() external pure returns(string memory) {
+    function version() external pure returns (string memory) {
         return "2.0";
     }
 }

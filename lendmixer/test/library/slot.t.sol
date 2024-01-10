@@ -7,7 +7,7 @@ import {StorageSlot} from "../../src/library/slot.sol";
 
 contract SlotTest is Test {
     StorageLayout internal storageLayout;
-    
+
     function setUp() public {
         storageLayout = new StorageLayout();
     }
@@ -52,7 +52,7 @@ contract StorageLayout {
         balances[key] = value;
     }
 
-    function getValue(bytes32 slot) public view returns(address) {
+    function getValue(bytes32 slot) public view returns (address) {
         return StorageSlot.getAddressSlot(slot).value;
     }
 }
